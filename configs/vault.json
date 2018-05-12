@@ -1,0 +1,17 @@
+{
+    "storage": {
+      "s3": {
+        "access_key": "{{aws_access_key}}",
+        "secret_key": "{{aws_secret_key}}",
+        "bucket": "school-vault",
+        "region": "eu-central-1"
+      }
+    },
+    "listener": {
+      "tcp": {
+        "address": "0.0.0.0:8200",
+        "tls_disable": "1"
+      }
+    },
+    "disable_mlock": "true"
+  }

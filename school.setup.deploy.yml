@@ -1,0 +1,56 @@
+---
+- hosts: server_swarm
+  vars:
+    - docker_username: toast38coza
+    - docker_email: info@38.co.za
+    - appliance_network: internal
+  vars_prompt:
+    name: docker_password
+  pre_tasks:
+    - name: Install dockerpy
+      pip:
+        name: "{{item}}"
+      with_items:
+        - "docker-py"
+        - requests
+  roles:
+    - name: appliance
+      appliance_name: httpbin
+      appliance_image: kennethreitz/httpbin
+      appliance_service_name: httpbin
+      commands:
+        - name: null
+          command: null
+      become: yes
+      tags:
+        - httpbin
+    - name: appliance
+      appliance_name: vault
+      appliance_image: vault
+      appliance_service_name: vault
+      commands:
+        - name: null
+          command: vault server
+      become: yes
+      environment:
+        - name: VAULT_LOCAL_CONFIG:
+          value: |
+            {
+              "storage": {
+                "s3": {
+                  "access_key": "{{aws_access_key}}",
+                  "secret_key": "{{aws_access_secret}}",
+                  "bucket": "school-vault",
+                  "region": "eu-central-1"
+                }
+              },
+              "listener": {
+                "tcp": {
+                  "address": "0.0.0.0:8200",
+                  "tls_disable": "1"
+                }
+              },
+              "disable_mlock": "true"
+            }
+      tags:
+        - vault

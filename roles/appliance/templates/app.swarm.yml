@@ -1,0 +1,21 @@
+version: "3.5"
+services:
+{% for command in commands %}
+  {{appliance_service_name}}{% if command.name %}_{{command.name}}{% endif %}:
+    image: {{appliance_image}}:{{appliance_image_tag|default('latest')}}
+{% if command.command %}
+    command: {{command}}
+{% endif %}
+{% if appliance_environment is defined %}
+    environment:
+{% for env in appliance_environment %}
+      - {{env.name}}={{env.value}}
+{% endfor %}
+{% endif %}
+    networks:
+    - {{appliance_network}}
+{% endfor %}
+networks:
+  {{appliance_network}}:
+    external:
+      name: {{appliance_network}}

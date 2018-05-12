@@ -1,0 +1,31 @@
+---
+- name: Create directories
+  file:
+    path: /school/stacks/
+    state: directory
+- name: Upload compose file
+  template:
+    src: "app.swarm.yml"
+    dest: /school/stacks/docker-compose.{{appliance_service_name}}.yml
+- name: Log into DockerHub so that the private repo can be pulled
+  docker_login:
+    username: "{{docker_username}}"
+    password: "{{docker_password}}"
+    email: "{{docker_email}}"
+    reauthorize: no
+- name: Create network
+  docker_network:
+    name: "{{appliance_network}}"
+    driver: overlay
+- name: Create configs
+  shell: "echo "{{ lookup('file', item.file_path) }}" | docker config create {{item.name}} -"
+  with_items:
+    - file_path: configs/vault.json
+      name: vault_config
+
+- name: Deploy
+  command: 'docker stack deploy -c /school/stacks/docker-compose.{{appliance_service_name}}.yml {{appliance_service_name}} --with-registry-auth'
+  run_once: true
+- name: Log out of DockerHub
+  docker_login:
+    state: absent
